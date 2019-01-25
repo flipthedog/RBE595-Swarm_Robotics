@@ -1,0 +1,6 @@
+./idea
+*/idea
+./Homework_2/.idea
+Homework_2/.idea/
+/Homework_2/.idea/
+./Homework_2/.idea/
