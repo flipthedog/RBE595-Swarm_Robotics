@@ -8,12 +8,12 @@ screen = pygame.display.set_mode(resolution)
 pygame.display.set_caption("Schelling Model Sim")
 pygame.display.set_icon(screen)
 
-board = Board.Board(200, 200, 3, 0.7)
+board = Board.Board(300, 300, 3, 0.7)
 
 
 def draw():
     board.draw(screen)
-    
+    pygame.display.flip()
 
 def update():
     None

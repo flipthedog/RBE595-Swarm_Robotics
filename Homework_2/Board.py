@@ -11,7 +11,7 @@ class Board:
         self.w = width
         self.h = height
         self.t = t
-        self.cells = []
+        self.cells = [[-1] * width] * height
         self.population = population
         self.createBoard()
 
@@ -27,8 +27,17 @@ class Board:
                 else:
                     type = random.randint(1,2)
 
-                cell = Cell(i, j, type)
-                self.cells.append(cell)
+                cell = Cell.Cell(i, j, type)
+
+                # Neighbors:
+                # 0 1 2
+                # 3 h 4
+                # 5 6 7
+
+                self.cells[i][j]
+
+                if (i - 1) > 0 and (j - 1) > 0:
+                cell.neighbors[]
 
     def draw(self, screen):
         rect = screen.get_rect()
@@ -44,11 +53,24 @@ class Board:
 
         cell_width = dist_x / self.w
         cell_height = dist_y / self.h
+        # print("Cell Width: " + str(cell_width))
+        # print("Cell Height: " + str(cell_height))
 
         for cell in self.cells:
-            rectangle = pygame.rect((-cell_width / 2) + cell_width * cell.w, (- cell_height / 2) + cell_height * cell_height, (cell_width / 2) + cell_width * cell.w, (- cell_height / 2) + cell_height * cell_height)
-            color = [255,0,0, 255]
-            pygame.draw.rect(screen, color, rectangle, width=0)
+            rectangle = pygame.Rect(
+                cell_width * cell.w,
+                cell_height * cell.h,
+                cell_width * (cell.w + 1),
+                 cell_height * (cell.h + 1))
+
+            if cell.type == 1:
+                color = [255, 0, 0]
+            elif cell.type == 2:
+                color = [0, 0, 255]
+            else:
+                color = [0, 0, 0]
+
+            pygame.draw.rect(screen, color, rectangle)
 
     def update(self):
         None
