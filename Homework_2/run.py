@@ -8,7 +8,7 @@ screen = pygame.display.set_mode(resolution)
 pygame.display.set_caption("Schelling Model Sim")
 pygame.display.set_icon(screen)
 
-board = Board.Board(50, 50, 3, 0.7)
+board = Board.Board(200, 200, 3, 0.7)
 
 
 def draw():
@@ -30,4 +30,4 @@ while 1:
         if event.type == pygame.QUIT:
             sys.exit()
 
-    pygame.time.wait(100000000)
+    pygame.time.wait(1000)

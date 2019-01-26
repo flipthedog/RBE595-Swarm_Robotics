@@ -149,6 +149,30 @@ class Board:
 
                 pygame.draw.rect(screen, color, rectangle)
 
+        # cell = self.cells[random.randint(0,self.h - 1)][random.randint(0,self.w - 1)]
+        #
+        # #print("Neighbors: " + str(len(cell.neighbors)))
+        #
+        # for neighbor in cell.neighbors:
+        #
+        #     if neighbor.isCell:
+        #         #print("Popped: w: " + str(neighbor.w) + " h: " + str(neighbor.h))
+        #
+        #         top_x = cell_width * neighbor.w
+        #         top_y = cell_height * neighbor.h
+        #         bottom_x = cell_width
+        #         bottom_y = cell_height
+        #
+        #         rectangle = pygame.Rect(
+        #             top_x,
+        #             top_y,
+        #             bottom_x,
+        #             bottom_y)
+        #
+        #         color = [random.randint(0,255), random.randint(0,255), 0]
+        #
+        #         pygame.draw.rect(screen, color, rectangle)
+
     def update(self):
 
         self.reshuffle_cells = []
@@ -166,41 +190,37 @@ class Board:
                 if happiness <= self.t:
                     self.reshuffle_cells.append(cell)
 
-        # self.updateCells()
+        self.updateCells()
 
     def updateCells(self):
 
         for cell in self.reshuffle_cells:
 
-            closest = self.findNearestEmpty(queue=[cell], visited=set())
+            closest = self.findNearestEmpty(cell)
 
             closest.type = cell.type
             cell.type = 0
 
     # Performs BFS search to find the nearest empty cell
-    def findNearestEmpty(self, queue, visited):
+    def findNearestEmpty(self, root):
 
-        # Resource Used: https://eddmann.com/posts/depth-first-search-and-breadth-first-search-in-python/
+        visited = []
 
-        while len(queue) > 0:
+        queue = [root]
 
-            print(len(queue))
+        while queue:
 
             vertex = queue.pop(0)
 
-            print("Popped: w: " + str(vertex.w) + " h: " + str(vertex.h))
-
-            if vertex is not visited:
-
-                visited.add(vertex)
-
-                for neighbor in vertex.neighbors:
-
-                    if neighbor.isCell:
-                        queue.append(neighbor)
-
             if vertex.type == 0:
                 return vertex
+
+            for neighbor in vertex.neighbors:
+
+                if neighbor not in visited and neighbor.isCell:
+                    visited.append(neighbor)
+                    queue.append(neighbor)
+
 
 
 

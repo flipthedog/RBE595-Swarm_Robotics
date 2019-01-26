@@ -21,6 +21,13 @@ class Cell:
 
         self.happiness = 0
 
+        for cell in self.neighbors:
+
+            if cell.isCell:
+
+                if cell.type == self.type:
+                    self.happiness += 1
+
     def printNeighbors(self):
 
         print("CELL COORDS: (x,y): (" + str(self.w) + ", " + str(self.h) + ")")
