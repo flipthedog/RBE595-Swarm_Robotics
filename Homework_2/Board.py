@@ -4,6 +4,7 @@ import pygame
 
 # Personal imports
 import Cell
+import EmptyCell
 
 class Board:
 
@@ -11,66 +12,195 @@ class Board:
         self.w = width
         self.h = height
         self.t = t
-        self.cells = [[-1] * width] * height
+        self.cells = [0] * self.h
+        for i in range(0, self.h):
+            self.cells[i] = [0] * self.w
+
         self.population = population
+
+        self.reshuffle_cells = [] # Cells that need to be moved
+
         self.createBoard()
+        self.populateNeighbors()
 
     def createBoard(self):
 
-        for i in range(0, self.w):
+        for i in range(0, self.h):
 
-            for j in range(0, self.h):
+            for j in range(0, self.w):
+
                 make_cell = random.uniform(0, 1)
 
-                if make_cell > self.population:
-                    type = 0
-                else:
-                    type = random.randint(1,2)
+                # print(make_cell)
 
-                cell = Cell.Cell(i, j, type)
+                if make_cell > self.population:
+                    type_num = 0
+                else:
+                    type_num = random.randint(1, 2)
+
+                cell = Cell.Cell(j, i, type_num)
 
                 # Neighbors:
-                # 0 1 2
-                # 3 h 4
-                # 5 6 7
+                #     -j
+                #    0 1 2
+                # -i 3 h 4 +i
+                #    5 6 7
+                #     +j
 
-                self.cells[i][j]
+                self.cells[i][j] = cell
 
+    def populateNeighbors(self):
+
+        for i in range(0, self.h):
+
+            for j in range(0, self.w):
+
+                cell = self.cells[i][j]
+
+                # Top-left
                 if (i - 1) > 0 and (j - 1) > 0:
-                cell.neighbors[]
+                    cell.neighbors.append(self.cells[i - 1][j - 1])
+                else:
+                    cell.neighbors.append(EmptyCell.EmptyCell())
+
+                # Top
+                if (j - 1) > 0:
+                    cell.neighbors.append(self.cells[i][j - 1])
+                else:
+                    cell.neighbors.append(EmptyCell.EmptyCell())
+
+                # Top Right
+                if (j - 1) > 0 and (i + 1) < self.w:
+                    cell.neighbors.append(self.cells[i + 1][j - 1])
+                else:
+                    cell.neighbors.append(EmptyCell.EmptyCell())
+
+                # Left
+                if (i - 1) > 0:
+                    cell.neighbors.append(self.cells[i - 1][j])
+                else:
+                    cell.neighbors.append(EmptyCell.EmptyCell())
+
+                # Right
+                if (i + 1) < self.w:
+                    cell.neighbors.append(self.cells[i + 1][j])
+                else:
+                    cell.neighbors.append(EmptyCell.EmptyCell())
+
+                # Left Bottom
+                if (i - 1) > 0 and (j + 1) < self.h:
+                    cell.neighbors.append(self.cells[i - 1][j + 1])
+                else:
+                    cell.neighbors.append(EmptyCell.EmptyCell())
+
+                # Bottom
+                if (j + 1) < self.h:
+                    cell.neighbors.append(self.cells[i][j + 1])
+                else:
+                    cell.neighbors.append(EmptyCell.EmptyCell())
+
+                # Right Bottom
+                if (i + 1) < self.w and (j + 1) < self.h:
+                    cell.neighbors.append(self.cells[i + 1][j + 1])
+                else:
+                    cell.neighbors.append(EmptyCell.EmptyCell())
 
     def draw(self, screen):
-        rect = screen.get_rect()
+        rect2 = screen.get_rect()
 
-        min_x = rect[0]
-        min_y = rect[1]
+        min_x = rect2[0]
+        min_y = rect2[1]
 
-        max_x = rect[2]
-        max_y = rect[3]
+        max_x = rect2[2]
+        max_y = rect2[3]
 
         dist_x = max_x - min_x
         dist_y = max_y - min_y
 
         cell_width = dist_x / self.w
         cell_height = dist_y / self.h
+
         # print("Cell Width: " + str(cell_width))
         # print("Cell Height: " + str(cell_height))
 
-        for cell in self.cells:
-            rectangle = pygame.Rect(
-                cell_width * cell.w,
-                cell_height * cell.h,
-                cell_width * (cell.w + 1),
-                 cell_height * (cell.h + 1))
+        for i in range(0, self.h):
 
-            if cell.type == 1:
-                color = [255, 0, 0]
-            elif cell.type == 2:
-                color = [0, 0, 255]
-            else:
-                color = [0, 0, 0]
+            for j in range(0, self.w):
 
-            pygame.draw.rect(screen, color, rectangle)
+                cell = self.cells[i][j]
+
+                top_x = cell_width * i
+                top_y = cell_height * j
+                bottom_x = cell_width * (i + 1)
+                bottom_y = cell_height * (j + 1)
+
+                rectangle = pygame.Rect(
+                    top_x,
+                    top_y,
+                    bottom_x,
+                    bottom_y)
+
+                if cell.type == 1:
+                    color = [255, 0, 0]
+                elif cell.type == 2:
+                    color = [0, 0, 255]
+                else:
+                    color = [0, 0, 0]
+
+                pygame.draw.rect(screen, color, rectangle)
 
     def update(self):
-        None
+
+        self.reshuffle_cells = []
+
+        for i in range(0, self.h):
+
+            for j in range(0, self.w):
+
+                cell = self.cells[i][j]
+
+                # cell.printNeighbors()
+
+                happiness = cell.update()
+
+                if happiness <= self.t:
+                    self.reshuffle_cells.append(cell)
+
+        # self.updateCells()
+
+    def updateCells(self):
+
+        for cell in self.reshuffle_cells:
+
+            closest = self.findNearestEmpty(queue=[cell], visited=set())
+
+            closest.type = cell.type
+            cell.type = 0
+
+    # Performs BFS search to find the nearest empty cell
+    def findNearestEmpty(self, queue, visited):
+
+        # Resource Used: https://eddmann.com/posts/depth-first-search-and-breadth-first-search-in-python/
+
+        while len(queue) > 0:
+
+            print(len(queue))
+
+            vertex = queue.pop(0)
+
+            print("Popped: w: " + str(vertex.w) + " h: " + str(vertex.h))
+
+            if vertex is not visited:
+
+                visited.add(vertex)
+
+                for neighbor in vertex.neighbors:
+
+                    if neighbor.isCell:
+                        queue.append(neighbor)
+
+            if vertex.type == 0:
+                return vertex
+
+
+

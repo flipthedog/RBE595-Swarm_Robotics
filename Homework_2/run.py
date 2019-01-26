@@ -8,7 +8,7 @@ screen = pygame.display.set_mode(resolution)
 pygame.display.set_caption("Schelling Model Sim")
 pygame.display.set_icon(screen)
 
-board = Board.Board(300, 300, 3, 0.7)
+board = Board.Board(50, 50, 3, 0.7)
 
 
 def draw():
@@ -16,14 +16,18 @@ def draw():
     pygame.display.flip()
 
 def update():
-    None
+
+    board.update()
 
 while 1:
 
+    update()
+
     draw()
+
     # Event getter loop
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
 
-    pygame.time.delay(5)
+    pygame.time.wait(100000000)
