@@ -199,6 +199,7 @@ class Board:
             closest = self.findNearestEmpty(cell)
 
             closest.type = cell.type
+
             cell.type = 0
 
     # Performs BFS search to find the nearest empty cell
@@ -215,7 +216,10 @@ class Board:
             if vertex.type == 0:
                 return vertex
 
-            for neighbor in vertex.neighbors:
+            neighbors = vertex.neighbors
+
+            random.shuffle(neighbors)
+            for neighbor in neighbors:
 
                 if neighbor not in visited and neighbor.isCell:
                     visited.append(neighbor)
