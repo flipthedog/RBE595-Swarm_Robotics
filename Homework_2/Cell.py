@@ -1,22 +1,27 @@
-import random
+# Cell.py
+# Cell object for the Board class
+# Tracks the individual cell type and neighbors
 
 class Cell:
 
     def __init__(self, width, height, cell_type):
+        # Location
         self.w = width
         self.h = height
+
         self.type = cell_type
-        self.happiness = 0
+        self.happiness = 0 # satisfaction
+
+        # Neighbors
         self.neighbors = []
         self.isCell = True
 
-        # print("Created new cell with: w: " + str(self.w) + " h: " + str(self.h) + " type: " + str(self.type))
-
+    # Cell update function
     def update(self):
-
         self.updateHappiness()
         return self.happiness
 
+    # Update the happiness of the cell, search through neighbors
     def updateHappiness(self):
 
         self.happiness = 0
@@ -28,6 +33,7 @@ class Cell:
                 if cell.type == self.type:
                     self.happiness += 1
 
+    # Debugging function to check neighbors
     def printNeighbors(self):
 
         print("CELL COORDS: (x,y): (" + str(self.w) + ", " + str(self.h) + ")")

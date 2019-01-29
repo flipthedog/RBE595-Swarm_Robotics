@@ -1,6 +1,10 @@
+# Board.py
+# Store the cell states
+
 # Imports
 import random
 import pygame
+import time
 
 # Personal imports
 import Cell
@@ -20,9 +24,10 @@ class Board:
 
         self.reshuffle_cells = [] # Cells that need to be moved
 
-        self.createBoard()
-        self.populateNeighbors()
+        self.createBoard() # Populate the arrays
+        self.populateNeighbors() # Set the neighbors
 
+    # Initialize the board array
     def createBoard(self):
 
         for i in range(0, self.h):
@@ -31,13 +36,13 @@ class Board:
 
                 make_cell = random.uniform(0, 1)
 
-                # print(make_cell)
-
+                # Decide whether to make the cell
                 if make_cell > self.population:
-                    type_num = 0
+                    type_num = 0 # Create empty cell
                 else:
-                    type_num = random.randint(1, 2)
+                    type_num = random.randint(1, 2) # Create cell of type
 
+                # Create the cell
                 cell = Cell.Cell(j, i, type_num)
 
                 # Neighbors:
@@ -47,10 +52,14 @@ class Board:
                 #    5 6 7
                 #     +j
 
+                # Add cell to array
                 self.cells[i][j] = cell
 
+    # populateNeighbors()
+    # Find the neighbors for all the cell objects
     def populateNeighbors(self):
 
+        # Iterate through every cell
         for i in range(0, self.h):
 
             for j in range(0, self.w):
@@ -105,9 +114,11 @@ class Board:
                 else:
                     cell.neighbors.append(EmptyCell.EmptyCell())
 
+    # Draw the cells individually on the pygame screen
     def draw(self, screen):
         rect2 = screen.get_rect()
 
+        # Math to determine where to draw and cell dimensions
         min_x = rect2[0]
         min_y = rect2[1]
 
@@ -117,12 +128,11 @@ class Board:
         dist_x = max_x - min_x
         dist_y = max_y - min_y
 
+        # Cell dimensions
         cell_width = dist_x / self.w
         cell_height = dist_y / self.h
 
-        # print("Cell Width: " + str(cell_width))
-        # print("Cell Height: " + str(cell_height))
-
+        # Draw all the cells
         for i in range(0, self.h):
 
             for j in range(0, self.w):
@@ -140,91 +150,96 @@ class Board:
                     bottom_x,
                     bottom_y)
 
+                # Determine cell color
                 if cell.type == 1:
-                    color = [255, 0, 0]
+                    color = [random.randint(225,255), 0, 0]
                 elif cell.type == 2:
-                    color = [0, 0, 255]
+                    color = [0, 0, random.randint(225,255)]
                 else:
                     color = [0, 0, 0]
 
                 pygame.draw.rect(screen, color, rectangle)
 
-        # cell = self.cells[random.randint(0,self.h - 1)][random.randint(0,self.w - 1)]
-        #
-        # #print("Neighbors: " + str(len(cell.neighbors)))
-        #
-        # for neighbor in cell.neighbors:
-        #
-        #     if neighbor.isCell:
-        #         #print("Popped: w: " + str(neighbor.w) + " h: " + str(neighbor.h))
-        #
-        #         top_x = cell_width * neighbor.w
-        #         top_y = cell_height * neighbor.h
-        #         bottom_x = cell_width
-        #         bottom_y = cell_height
-        #
-        #         rectangle = pygame.Rect(
-        #             top_x,
-        #             top_y,
-        #             bottom_x,
-        #             bottom_y)
-        #
-        #         color = [random.randint(0,255), random.randint(0,255), 0]
-        #
-        #         pygame.draw.rect(screen, color, rectangle)
-
+    # Board update function
     def update(self):
 
+        # Empty out the previous array
         self.reshuffle_cells = []
 
+        # Iterate through all the cells and decide which to move
         for i in range(0, self.h):
 
             for j in range(0, self.w):
 
                 cell = self.cells[i][j]
 
-                # cell.printNeighbors()
-
-                happiness = cell.update()
+                happiness = cell.update() # Update the cell happiness
 
                 if happiness <= self.t:
+                    # Unhappy cell, so it has to be moved
                     self.reshuffle_cells.append(cell)
 
         self.updateCells()
 
+    # updateCells()
+    # Update the status of the cells
     def updateCells(self):
 
         for cell in self.reshuffle_cells:
+            # start = time.time()
+            # Perform BFS to find nearest happy cell
+            closest = self.findNearestEmpty(cell, cell.type)
+            # end = time.time()
 
-            closest = self.findNearestEmpty(cell)
+            # print("BFS Time: " + str(end - start))
 
+            # Alter the cell to empty and new cell to type
             closest.type = cell.type
 
             cell.type = 0
 
+
+    # Calculate the cell's happiness
+    def calc_happiness(self, cell, cell_type):
+        neighbors = cell.neighbors
+
+        number = 0
+
+        # Search through neighbor types
+        for neighbor in neighbors:
+            if neighbor.isCell:
+                if neighbor.type == cell_type:
+                    number += 1
+
+        return number
+
     # Performs BFS search to find the nearest empty cell
-    def findNearestEmpty(self, root):
+    def findNearestEmpty(self, root, cell_type):
 
-        visited = []
+        visited = [] # Array of visited cells
 
-        queue = [root]
+        queue = [root] # BFS queue
 
         while queue:
 
             vertex = queue.pop(0)
 
+            # Check if cell is empty
             if vertex.type == 0:
-                return vertex
+                # Check if cell will satisfy
+                if self.calc_happiness(vertex, cell_type):
+                    return vertex
 
             neighbors = vertex.neighbors
 
+            # Randomize neighbors
             random.shuffle(neighbors)
+
             for neighbor in neighbors:
 
+                # Check if neighbors have been visited
                 if neighbor not in visited and neighbor.isCell:
+
+                    # Neighbor has not been visited, so add it
                     visited.append(neighbor)
                     queue.append(neighbor)
-
-
-
-
